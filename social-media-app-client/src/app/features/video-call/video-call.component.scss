@@ -1,0 +1,477 @@
+.video-call-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.remote-video-wrapper {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: videoFadeIn 0.5s ease-out;
+}
+
+@keyframes videoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.call-status-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.call-status-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  
+  i {
+    color: white;
+  }
+}
+
+.call-status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.remote-user-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.call-status-text {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.local-video-wrapper {
+  position: absolute;
+  bottom: 140px;
+  right: 24px;
+  width: 200px;
+  height: 150px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  z-index: 11;
+  transition: all 0.3s ease;
+  animation: slideUp 0.5s ease-out;
+  
+  &.minimized {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.video-disabled-overlay {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  i {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.controls-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem 2rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+  z-index: 12;
+}
+
+.controls-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.controls-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 2rem;
+}
+
+.control-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.control-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+::ng-deep {
+  .control-btn {
+    width: 60px !important;
+    height: 60px !important;
+    transition: all 0.2s ease !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    
+    &:hover {
+      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.25) !important;
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+    
+    .p-button-icon {
+      font-size: 1.5rem;
+      color: white !important;
+    }
+    
+    &.p-button-danger:not(.p-button-outlined) {
+      background: rgba(239, 68, 68, 0.9) !important;
+      border-color: rgba(239, 68, 68, 1) !important;
+      
+      &:hover {
+        background: rgba(220, 38, 38, 1) !important;
+      }
+      
+      .p-button-icon {
+        color: white !important;
+      }
+    }
+  }
+  
+  .hangup-btn {
+    width: 72px !important;
+    height: 72px !important;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border: none !important;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+    
+    &:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+      box-shadow: 0 12px 32px rgba(239, 68, 68, 0.6);
+      transform: scale(1.08);
+    }
+    
+    &:active {
+      transform: scale(0.98);
+    }
+    
+    .p-button-icon {
+      font-size: 1.75rem;
+      transform: rotate(135deg);
+      color: white !important;
+    }
+  }
+}
+
+// Tablet breakpoint
+@media (max-width: 768px) {
+  .call-status-card {
+    padding: 0.875rem 1.25rem;
+    gap: 0.875rem;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  
+  .remote-user-name {
+    font-size: 1rem;
+  }
+  
+  .call-status-text {
+    font-size: 0.8125rem;
+  }
+  
+  .local-video-wrapper {
+    width: 160px;
+    height: 120px;
+    bottom: 120px;
+    right: 16px;
+  }
+  
+  .controls-bar {
+    padding: 2rem 1.5rem;
+  }
+  
+  .controls-content {
+    gap: 1.5rem;
+  }
+  
+  ::ng-deep {
+    .control-btn {
+      width: 54px !important;
+      height: 54px !important;
+      
+      .p-button-icon {
+        font-size: 1.25rem;
+      }
+    }
+    
+    .hangup-btn {
+      width: 64px !important;
+      height: 64px !important;
+      
+      .p-button-icon {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+// Mobile breakpoint
+@media (max-width: 480px) {
+  .call-status-overlay {
+    padding: 1rem;
+  }
+  
+  .call-status-card {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1.125rem;
+  }
+  
+  .remote-user-name {
+    font-size: 0.9375rem;
+  }
+  
+  .call-status-text {
+    font-size: 0.75rem;
+  }
+  
+  .local-video-wrapper {
+    width: 120px;
+    height: 90px;
+    bottom: 110px;
+    right: 12px;
+    border-radius: 12px;
+  }
+  
+  .video-disabled-overlay {
+    i {
+      font-size: 1.5rem;
+    }
+    
+    span {
+      font-size: 0.625rem;
+    }
+  }
+  
+  .controls-bar {
+    padding: 1.5rem 1rem;
+  }
+  
+  .controls-content {
+    gap: 1rem;
+  }
+  
+  .control-label {
+    font-size: 0.625rem;
+    gap: 0.5rem;
+  }
+  
+  ::ng-deep {
+    .control-btn {
+      width: 50px !important;
+      height: 50px !important;
+      
+      .p-button-icon {
+        font-size: 1.125rem;
+      }
+    }
+    
+    .hangup-btn {
+      width: 58px !important;
+      height: 58px !important;
+      
+      .p-button-icon {
+        font-size: 1.375rem;
+      }
+    }
+  }
+}
+
+// Landscape mode adjustments for mobile
+@media (max-width: 768px) and (orientation: landscape) {
+  .call-status-overlay {
+    padding: 0.75rem;
+  }
+  
+  .call-status-card {
+    padding: 0.5rem 0.875rem;
+    gap: 0.5rem;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  .remote-user-name {
+    font-size: 0.875rem;
+  }
+  
+  .call-status-text {
+    font-size: 0.6875rem;
+  }
+  
+  .local-video-wrapper {
+    width: 120px;
+    height: 90px;
+    bottom: 80px;
+    right: 12px;
+  }
+  
+  .controls-bar {
+    padding: 1rem;
+  }
+  
+  .control-label {
+    display: none;
+  }
+  
+  .controls-content {
+    gap: 1rem;
+  }
+}

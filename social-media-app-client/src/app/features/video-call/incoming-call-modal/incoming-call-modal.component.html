@@ -1,0 +1,45 @@
+<div class="incoming-call-modal" *ngIf="showModal">
+  <div class="modal-backdrop" (click)="declineCall()"></div>
+  <p-card styleClass="call-card">
+    <div class="call-content">
+      <!-- Caller Avatar with Rings -->
+      <div class="caller-avatar-wrapper">
+        <div class="pulse-rings">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring delay-1"></div>
+          <div class="pulse-ring delay-2"></div>
+        </div>
+        <div class="caller-avatar">
+          <i class="pi pi-video"></i>
+        </div>
+      </div>
+      
+      <!-- Caller Info -->
+      <div class="caller-info">
+        <h3 class="caller-name">{{ incomingCall?.callerName || 'Unknown' }}</h3>
+        <p class="call-label">
+          <i class="pi pi-phone ringing-icon"></i>
+          Incoming video call...
+        </p>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="call-actions">
+        <button class="action-btn decline-btn" (click)="declineCall()">
+          <div class="btn-icon">
+            <i class="pi pi-times"></i>
+          </div>
+          <span class="btn-label">Decline</span>
+        </button>
+        
+        <button class="action-btn accept-btn" (click)="acceptCall()">
+          <div class="btn-icon">
+            <i class="pi pi-phone"></i>
+          </div>
+          <span class="btn-label">Accept</span>
+        </button>
+      </div>
+    </div>
+  </p-card>
+</div>
+

@@ -1,0 +1,315 @@
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: 101;
+
+  lucide-icon {
+    color: #667eea;
+  }
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 101;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f7fafc;
+    color: #667eea;
+
+    lucide-icon {
+      transform: scale(1.1);
+    }
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    lucide-icon {
+      color: white;
+    }
+  }
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #fc8181;
+    color: #e53e3e;
+    background: #fff5f5;
+    transform: translateY(-2px);
+
+    lucide-icon {
+      transform: rotate(-10deg);
+    }
+  }
+}
+
+.mobile-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+
+  .navbar-brand {
+    span {
+      font-size: 1.25rem;
+    }
+    
+    &.menu-open span {
+      display: none;
+    }
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 280px;
+    background: white;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 5rem 0 2rem;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    z-index: 100;
+
+    &.mobile-open {
+      right: 0;
+    }
+  }
+
+  .navbar-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+
+    .nav-link {
+      width: 100%;
+      padding: 1rem 2rem;
+      border-radius: 0;
+      justify-content: flex-start;
+      color: #1e293b;
+
+      lucide-icon {
+        color: #64748b;
+      }
+
+      span {
+        display: inline;
+        font-size: 1rem;
+        color: #1e293b;
+      }
+
+      &:hover {
+        background: #f7fafc;
+        
+        lucide-icon {
+          color: #667eea;
+        }
+        
+        span {
+          color: #667eea;
+        }
+      }
+
+      &.active {
+        border-left: 4px solid #667eea;
+        background: #eef2ff;
+        color: #667eea;
+        
+        lucide-icon {
+          color: #667eea;
+        }
+        
+        span {
+          color: #667eea;
+        }
+      }
+    }
+  }
+
+  .navbar-user {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 1rem 0 0;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+
+    .user-info {
+      width: 100%;
+      padding: 1rem 2rem;
+      gap: 1rem;
+
+      .user-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+      }
+
+      .user-name {
+        display: inline;
+        font-size: 1rem;
+      }
+    }
+
+    .logout-btn {
+      width: 100%;
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      justify-content: flex-start;
+      padding: 1rem 2rem;
+
+      span {
+        display: inline;
+      }
+
+      &:hover {
+        background: #fff5f5;
+        transform: none;
+      }
+    }
+  }
+
+  .mobile-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+

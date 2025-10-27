@@ -1,0 +1,48 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-brand" [class.menu-open]="mobileMenuOpen()">
+      <lucide-icon [img]="Zap" [size]="24"></lucide-icon>
+      <span>SocialApp</span>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" *ngIf="currentUser$ | async" (click)="toggleMobileMenu()">
+      <lucide-icon [img]="mobileMenuOpen() ? X : Menu" [size]="24"></lucide-icon>
+    </button>
+
+    <!-- Desktop & Mobile Menu -->
+    <div class="navbar-menu" *ngIf="currentUser$ | async as user" [class.mobile-open]="mobileMenuOpen()">
+      <div class="navbar-links">
+        <a routerLink="/feed" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+          <lucide-icon [img]="Home" [size]="20"></lucide-icon>
+          <span>Feed</span>
+        </a>
+        <a routerLink="/users" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+          <lucide-icon [img]="UsersIcon" [size]="20"></lucide-icon>
+          <span>Discover</span>
+        </a>
+        <a routerLink="/chat" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+          <lucide-icon [img]="MessageCircleIcon" [size]="20"></lucide-icon>
+          <span>Messages</span>
+        </a>
+      </div>
+
+      <div class="navbar-user">
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ user.displayName.charAt(0).toUpperCase() }}
+          </div>
+          <span class="user-name">{{ user.displayName }}</span>
+        </div>
+        <button class="logout-btn" (click)="logout()">
+          <lucide-icon [img]="LogOut" [size]="18"></lucide-icon>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-overlay" *ngIf="mobileMenuOpen()" (click)="closeMobileMenu()"></div>
+</nav>
+

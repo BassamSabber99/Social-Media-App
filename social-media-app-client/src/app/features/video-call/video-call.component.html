@@ -1,0 +1,83 @@
+<div class="video-call-container">
+  <!-- Remote Video (Full Screen) -->
+  <div class="remote-video-wrapper">
+    <video #remoteVideo autoplay playsinline class="remote-video"></video>
+    
+    <!-- Call Status Overlay -->
+    <div class="call-status-overlay">
+      <div class="call-status-card">
+        <div class="user-avatar">
+          <i class="pi pi-user"></i>
+        </div>
+        <div class="call-status-info">
+          <div class="remote-user-name">{{ remoteUserName }}</div>
+          <div class="call-status-text">
+            <span class="status-indicator" *ngIf="callState === 'ringing'"></span>
+            {{ callStatusText }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Local Video (PIP) -->
+  <div class="local-video-wrapper" [class.minimized]="!isVideoEnabled">
+    <video #localVideo autoplay playsinline muted class="local-video" *ngIf="isVideoEnabled"></video>
+    <div class="video-disabled-overlay" *ngIf="!isVideoEnabled">
+      <i class="pi pi-eye-slash"></i>
+      <span>Camera Off</span>
+    </div>
+  </div>
+  
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="controls-wrapper">
+      <div class="controls-content">
+        <!-- Mute/Unmute Audio -->
+        <div class="control-item">
+          <p-button 
+            [icon]="isAudioEnabled ? 'pi pi-microphone' : 'pi pi-volume-off'" 
+            [rounded]="true" 
+            [severity]="isAudioEnabled ? 'secondary' : 'danger'"
+            (onClick)="toggleAudio()"
+            [outlined]="isAudioEnabled"
+            styleClass="control-btn"
+            [pTooltip]="isAudioEnabled ? 'Mute' : 'Unmute'"
+            tooltipPosition="top">
+          </p-button>
+          <span class="control-label">{{ isAudioEnabled ? 'Mute' : 'Unmute' }}</span>
+        </div>
+        
+        <!-- Hang Up -->
+        <div class="control-item">
+          <p-button 
+            icon="pi pi-phone" 
+            [rounded]="true" 
+            severity="danger"
+            (onClick)="hangUp()"
+            styleClass="hangup-btn"
+            pTooltip="End Call"
+            tooltipPosition="top">
+          </p-button>
+          <span class="control-label">End Call</span>
+        </div>
+        
+        <!-- Enable/Disable Video -->
+        <div class="control-item">
+          <p-button 
+            [icon]="isVideoEnabled ? 'pi pi-video' : 'pi pi-eye-slash'" 
+            [rounded]="true" 
+            [severity]="isVideoEnabled ? 'secondary' : 'danger'"
+            (onClick)="toggleVideo()"
+            [outlined]="isVideoEnabled"
+            styleClass="control-btn"
+            [pTooltip]="isVideoEnabled ? 'Turn Off Camera' : 'Turn On Camera'"
+            tooltipPosition="top">
+          </p-button>
+          <span class="control-label">{{ isVideoEnabled ? 'Camera' : 'Camera' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

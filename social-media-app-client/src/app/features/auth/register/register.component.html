@@ -1,0 +1,111 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">
+        <i class="pi pi-bolt"></i>
+      </div>
+      <h1>Join Us</h1>
+      <p>Create your account and start connecting</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="userName">Username</label>
+        <div class="input-wrapper">
+          <i class="pi pi-at input-icon"></i>
+          <input
+            id="userName"
+            type="text"
+            formControlName="userName"
+            placeholder="Choose a username"
+            [class.error]="userName?.invalid && userName?.touched"
+          />
+        </div>
+        <small class="error-message" *ngIf="userName?.invalid && userName?.touched">
+          <span *ngIf="userName?.errors?.['required']">Username is required</span>
+          <span *ngIf="userName?.errors?.['minlength']">Username must be at least 3 characters</span>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="displayName">Display Name</label>
+        <div class="input-wrapper">
+          <i class="pi pi-user input-icon"></i>
+          <input
+            id="displayName"
+            type="text"
+            formControlName="displayName"
+            placeholder="Your full name"
+            [class.error]="displayName?.invalid && displayName?.touched"
+          />
+        </div>
+        <small class="error-message" *ngIf="displayName?.invalid && displayName?.touched">
+          <span *ngIf="displayName?.errors?.['required']">Display name is required</span>
+          <span *ngIf="displayName?.errors?.['minlength']">Display name must be at least 2 characters</span>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-wrapper">
+          <i class="pi pi-envelope input-icon"></i>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Enter your email"
+            [class.error]="email?.invalid && email?.touched"
+          />
+        </div>
+        <small class="error-message" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">Email is required</span>
+          <span *ngIf="email?.errors?.['email']">Invalid email format</span>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="pi pi-lock input-icon"></i>
+          <input
+            id="password"
+            [type]="passwordVisible ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Create a password"
+            [class.error]="password?.invalid && password?.touched"
+          />
+          <i
+            class="pi input-icon-right"
+            [ngClass]="passwordVisible ? 'pi-eye-slash' : 'pi-eye'"
+            (click)="togglePasswordVisibility()"
+          ></i>
+        </div>
+        <small class="error-message" *ngIf="password?.invalid && password?.touched">
+          <span *ngIf="password?.errors?.['required']">Password is required</span>
+          <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+        </small>
+      </div>
+
+      <div class="error-alert" *ngIf="error$ | async as error">
+        <i class="pi pi-exclamation-circle"></i>
+        <span>{{ error }}</span>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="(loading$ | async) || registerForm.invalid"
+      >
+        <span *ngIf="!(loading$ | async)">Create Account</span>
+        <span *ngIf="loading$ | async" class="loading-spinner">
+          <i class="pi pi-spin pi-spinner"></i> Creating account...
+        </span>
+      </button>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a routerLink="/auth/login">Sign in</a></p>
+      </div>
+    </form>
+  </div>
+</div>
+

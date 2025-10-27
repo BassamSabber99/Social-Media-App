@@ -1,0 +1,134 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'primeicons/primeicons.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  /* Prevent text size adjustment on orientation change */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+  color: #2d3748;
+  min-height: 100vh;
+  position: relative;
+  
+  /* Touch optimization */
+  -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+  touch-action: manipulation;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+input, button, textarea, select {
+  font-family: inherit;
+  /* Remove default iOS styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+button, a {
+  cursor: pointer;
+  /* Improve touch target size */
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Remove tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Prevent text selection on buttons */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+/* Improve touch scrolling */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+app-root {
+  position: relative;
+  z-index: 1;
+  overflow-x: hidden;
+  width: 100%;
+  display: block;
+}
+
+/* Prevent horizontal scroll everywhere */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  body {
+    /* Better background on mobile */
+    background-attachment: scroll;
+  }
+  
+  /* Larger tap targets on mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better text rendering on mobile */
+  * {
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  
+  /* Adjust spacing for very small screens */
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Landscape mode on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  body {
+    min-height: 100vh;
+  }
+}

@@ -1,0 +1,105 @@
+<app-navbar></app-navbar>
+
+<div class="discovery-layout">
+  <div class="discovery-header">
+    <div class="header-icon">
+      <lucide-icon [img]="Users" [size]="32"></lucide-icon>
+    </div>
+    <h1>Discover People</h1>
+    <p>Find and connect with other users</p>
+  </div>
+
+  <div class="search-section">
+    <div class="search-box">
+      <lucide-icon [img]="Search" [size]="20" class="search-icon"></lucide-icon>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+        placeholder="Search users by name or username..."
+        class="search-input"
+      />
+    </div>
+  </div>
+
+  <div class="results-section">
+    <ng-container *ngIf="loading()">
+      <p-skeleton height="5rem" class="skeleton-card" *ngFor="let i of [1,2,3]"></p-skeleton>
+    </ng-container>
+
+    <ng-container *ngIf="error() as errorMessage">
+      <p-card class="error-card">
+        <p>{{ errorMessage }}</p>
+      </p-card>
+    </ng-container>
+
+    <ng-container *ngIf="!loading() && !error() && users().length === 0 && searchQuery.length >= 2">
+      <p-card class="empty-card">
+        <lucide-icon [img]="Users" [size]="48" class="empty-icon"></lucide-icon>
+        <p>No users found</p>
+        <span>Try a different search term</span>
+      </p-card>
+    </ng-container>
+
+    <ng-container *ngIf="!loading() && !error() && searchQuery.length < 2">
+      <p-card class="hint-card">
+        <lucide-icon [img]="Search" [size]="48" class="hint-icon"></lucide-icon>
+        <p>Start typing to search</p>
+        <span>Enter at least 2 characters</span>
+      </p-card>
+    </ng-container>
+
+    <div class="user-grid" *ngIf="!loading() || users().length > 0">
+      <p-card class="user-card" *ngFor="let user of users()">
+        <div class="user-header">
+          <div class="user-avatar">
+            {{ getUserInitial(user.displayName) }}
+          </div>
+          <div class="user-info">
+            <h3 class="user-name">{{ user.displayName }}</h3>
+            <p class="user-username">{{ '@' + user.userName }}</p>
+          </div>
+        </div>
+
+        <p class="user-bio" *ngIf="user.bio">{{ user.bio }}</p>
+
+        <div class="user-stats">
+          <div class="stat">
+            <span class="stat-value">{{ user.followersCount }}</span>
+            <span class="stat-label">Followers</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ user.followingCount }}</span>
+            <span class="stat-label">Following</span>
+          </div>
+        </div>
+
+        <div class="user-actions">
+          <button 
+            class="follow-button"
+            [class.following]="user.isFollowedByRequester"
+            (click)="toggleFollow(user)">
+            <lucide-icon 
+              [img]="user.isFollowedByRequester ? UserMinus : UserPlus" 
+              [size]="18">
+            </lucide-icon>
+            <span>{{ user.isFollowedByRequester ? 'Unfollow' : 'Follow' }}</span>
+          </button>
+          <button 
+            class="message-button"
+            (click)="messageUser(user)">
+            <lucide-icon [img]="MessageCircleIcon" [size]="18"></lucide-icon>
+            <span>Message</span>
+          </button>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Infinite scroll loading indicator -->
+    <div class="loading-more" *ngIf="isLoadingMore">
+      <p-skeleton height="10rem" class="skeleton-card" *ngFor="let i of [1,2]"></p-skeleton>
+    </div>
+  </div>
+</div>
+

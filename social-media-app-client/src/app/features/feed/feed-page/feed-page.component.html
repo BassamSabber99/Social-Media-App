@@ -1,0 +1,121 @@
+<app-navbar></app-navbar>
+<div class="feed-layout">
+  <p-card class="composer">
+    <div class="composer-header">
+      <p-avatar icon="pi pi-user" shape="circle"></p-avatar>
+      <span class="composer-title">Share something new</span>
+    </div>
+    <textarea
+      pTextarea
+      rows="3"
+      placeholder="What's happening?"
+      [(ngModel)]="draft"
+      [disabled]="loading()"
+    ></textarea>
+    <div class="composer-actions">
+      <button class="post-button" [disabled]="!draft.trim() || loading()" (click)="submitPost()">
+        <lucide-icon [img]="Send" [size]="18"></lucide-icon>
+        <span>Post</span>
+      </button>
+    </div>
+  </p-card>
+
+  <p-divider></p-divider>
+
+  <ng-container *ngIf="loading() && posts().length === 0; else feedContent">
+    <p-skeleton height="5rem" class="skeleton-card" *ngFor="let skeleton of skeletons"></p-skeleton>
+  </ng-container>
+
+  <ng-template #feedContent>
+    <ng-container *ngIf="error() as errorMessage; else postsList">
+      <p-card class="error-card">
+        <p>{{ errorMessage }}</p>
+        <p-button label="Retry" icon="pi pi-refresh" (onClick)="reloadFeed()"></p-button>
+      </p-card>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #postsList>
+    <p-card class="post-card" *ngFor="let post of posts()">
+      <div class="post-header">
+        <p-avatar icon="pi pi-user" shape="circle"></p-avatar>
+        <div class="post-author">
+          <span class="display-name">{{ post.authorDisplayName || post.authorUserName }}</span>
+          <span class="username">{{ '@' + post.authorUserName }}</span>
+        </div>
+        <button 
+          class="follow-author-btn" 
+          *ngIf="post.authorId !== GetUserId()"
+          [class.following]="post.isAuthorFollowedByRequester"
+          (click)="toggleFollowAuthor(post)">
+          <lucide-icon [img]="post.isAuthorFollowedByRequester ? UserMinus : UserPlus" [size]="14"></lucide-icon>
+        </button>
+        <span class="timestamp">{{ post.createdAtUtc | date: 'short' }}</span>
+      </div>
+      <p-divider></p-divider>
+      <div class="post-content">
+        {{ post.content }}
+      </div>
+      <div class="post-actions">
+        <button class="action-btn like-btn" [class.liked]="post.isLikedByRequester" (click)="toggleLike(post)">
+          <lucide-icon [img]="Heart" [size]="20"></lucide-icon>
+          <span>{{ post.likeCount }}</span>
+        </button>
+        <button class="action-btn comment-btn" (click)="toggleComments(post)">
+          <lucide-icon [img]="MessageCircle" [size]="20"></lucide-icon>
+          <span>{{ post.commentCount }}</span>
+        </button>
+        <button class="action-btn expand-btn" (click)="toggleComments(post)" *ngIf="post.commentCount > 0">
+          <lucide-icon [img]="expandedComments[post.id] ? ChevronUp : ChevronDown" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Comments Section -->
+      <div class="comments-section" *ngIf="expandedComments[post.id]">
+        <p-divider></p-divider>
+        
+        <!-- Comment Input -->
+        <div class="comment-input">
+          <textarea
+            pTextarea
+            rows="2"
+            placeholder="Write a comment..."
+            [(ngModel)]="commentDrafts[post.id]"
+            class="comment-textarea"
+          ></textarea>
+          <button class="send-comment-btn" (click)="submitComment(post)" [disabled]="!(commentDrafts[post.id] && commentDrafts[post.id].trim())">
+            <lucide-icon [img]="Send" [size]="18"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Comments List -->
+        <div class="comments-list" *ngIf="postComments[post.id]?.length">
+          <div class="comment-item" *ngFor="let comment of postComments[post.id]">
+            <div class="comment-header">
+              <p-avatar icon="pi pi-user" shape="circle"></p-avatar>
+              <div class="comment-author">
+                <span class="author-name">{{ comment.authorDisplayName || comment.authorUserName }}</span>
+                <span class="comment-time">{{ comment.createdAtUtc | date: 'short' }}</span>
+              </div>
+              <button class="delete-comment-btn" (click)="deleteComment(post.id, comment.id)">
+                <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+              </button>
+            </div>
+            <div class="comment-content">{{ comment.content }}</div>
+          </div>
+        </div>
+
+        <div class="loading-comments" *ngIf="loadingComments[post.id]">
+          <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+          <p-skeleton height="3rem"></p-skeleton>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Infinite scroll - no button needed -->
+    <div class="loading-more" *ngIf="isLoadingMore && canLoadMore()">
+      <p-skeleton height="5rem" class="skeleton-card"></p-skeleton>
+      <p-skeleton height="5rem" class="skeleton-card"></p-skeleton>
+    </div>
+  </ng-template>
+</div>

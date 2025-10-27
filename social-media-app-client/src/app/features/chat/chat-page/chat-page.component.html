@@ -1,0 +1,155 @@
+<app-navbar></app-navbar>
+<p-toast></p-toast>
+
+<div class="chat-container">
+  <div class="chat-layout">
+    <div class="chat-list" [class.mobile-hidden]="!showMobileChatList()">
+      <div class="chat-list-header">
+        <h2>
+          <lucide-angular [img]="MessageCircleIcon" [size]="24"></lucide-angular>
+          Messages
+        </h2>
+        <div class="connection-status" [class.connected]="isConnected()" [class.disconnected]="!isConnected()">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ isConnected() ? 'Real-time' : 'Offline mode' }}</span>
+        </div>
+      </div>
+
+      <div class="chat-list-content">
+        @if (loading()) {
+          <div class="loading-state">
+            <p>Loading chats...</p>
+          </div>
+        } @else if (sortedChats().length === 0) {
+          <div class="empty-state">
+            <lucide-angular [img]="MessageCircleIcon" [size]="48"></lucide-angular>
+            <p>No conversations yet</p>
+            <small>Start chatting with other users from their profiles</small>
+          </div>
+        } @else {
+          @for (chat of sortedChats(); track chat.id) {
+            <div 
+              class="chat-item" 
+              [class.selected]="selectedChat()?.id === chat.id"
+              (click)="selectChat(chat)">
+              <div class="chat-avatar">
+                @if (chat.otherUserProfileImageUrl) {
+                  <p-avatar [image]="chat.otherUserProfileImageUrl" shape="circle" size="large"></p-avatar>
+                } @else {
+                  <p-avatar 
+                    [label]="getAvatarInitials(chat.otherUserDisplayName)" 
+                    shape="circle" 
+                    size="large" 
+                    [style]="{'background-color': '#6366f1', 'color': '#fff'}">
+                  </p-avatar>
+                }
+              </div>
+              <div class="chat-info">
+                <div class="chat-header">
+                  <h3>{{ chat.otherUserDisplayName }}</h3>
+                  <span class="chat-time">{{ formatChatTime(chat.lastMessageAtUtc) }}</span>
+                </div>
+                <div class="chat-preview">
+                  <p>{{ chat.lastMessageContent || 'No messages yet' }}</p>
+                  @if (chat.unreadCount > 0) {
+                    <p-badge [value]="chat.unreadCount.toString()" severity="danger"></p-badge>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="chat-conversation" [class.mobile-hidden]="showMobileChatList()">
+      @if (!selectedChat()) {
+        <div class="no-chat-selected">
+          <lucide-angular [img]="MessageCircleIcon" [size]="64"></lucide-angular>
+          <h2>Select a conversation</h2>
+          <p>Choose a chat from the list to start messaging</p>
+        </div>
+      } @else {
+        <div class="conversation-header">
+          <button class="mobile-back-btn" (click)="backToMobileChatList()">
+            <lucide-angular [img]="ArrowLeftIcon" [size]="24"></lucide-angular>
+          </button>
+          <div class="conversation-user">
+            @if (selectedChat()!.otherUserProfileImageUrl) {
+              <p-avatar [image]="selectedChat()!.otherUserProfileImageUrl" shape="circle"></p-avatar>
+            } @else {
+              <p-avatar 
+                [label]="getAvatarInitials(selectedChat()!.otherUserDisplayName)" 
+                shape="circle" 
+                [style]="{'background-color': '#6366f1', 'color': '#fff'}">
+              </p-avatar>
+            }
+            <div>
+              <h3>{{ selectedChat()!.otherUserDisplayName }}</h3>
+              <p class="username">{{ getUsername(selectedChat()!.otherUserName) }}</p>
+            </div>
+          </div>
+          <div class="conversation-actions">
+            <button 
+              class="video-call-btn" 
+              [class.disabled]="!canCallCurrentChat()"
+              [disabled]="!canCallCurrentChat()"
+              (click)="initiateVideoCall()"
+              [pTooltip]="canCallCurrentChat() ? 'Start video call' : 'Cannot call yourself'"
+              tooltipPosition="bottom">
+              <div class="btn-icon-wrapper">
+                <i class="pi pi-video"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="messages-container">
+          @if (messages().length === 0) {
+            <div class="no-messages">
+              <p>No messages yet. Start the conversation!</p>
+            </div>
+          } @else {
+            <div class="messages-list">
+              @for (message of messages(); track message.id) {
+                <div 
+                  class="message" 
+                  [class.own-message]="message.senderId === currentUserId"
+                  [class.other-message]="message.senderId !== currentUserId">
+                  <div class="message-content">
+                    <p>{{ message.content }}</p>
+                    <div class="message-meta">
+                      <span class="message-time">{{ formatTime(message.createdAtUtc) }}</span>
+                      @if (message.senderId === currentUserId && message.isRead) {
+                        <span class="read-status">Read</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="message-input-container">
+          <input 
+            type="text" 
+            pInputText 
+            [ngModel]="messageContent()"
+            (ngModelChange)="messageContent.set($event)"
+            (keydown.enter)="sendMessage()"
+            placeholder="Type a message..."
+            class="message-input"
+          />
+          <p-button 
+            (onClick)="sendMessage()"
+            [disabled]="!messageContent().trim() || sending()"
+            [loading]="sending()"
+            severity="primary">
+            <lucide-angular [img]="SendIcon" [size]="20"></lucide-angular>
+          </p-button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
