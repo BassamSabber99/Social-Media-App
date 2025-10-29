@@ -67,12 +67,24 @@ export class WebRTCService {
   public ensureInitialized(): void {
     if (!this.signalrService.isConnected('video')) {
       console.log('🔄 Initializing video hub...');
-      this.signalrService.createHubConnection('video');
+      this.signalrService.createHubConnection('video',{
+        reconnectPolicy: {
+          nextRetryDelayInMilliseconds: (retryContext) => {
+            // Exponential backoff: 0s, 2s, 10s, 30s, max 60s
+            if (retryContext.previousRetryCount === 0) return 0;
+            if (retryContext.previousRetryCount === 1) return 2000;
+            if (retryContext.previousRetryCount === 2) return 10000;
+            if (retryContext.previousRetryCount === 3) return 30000;
+            return 60000;
+          }
+        }
+      });
     }
   }
   private async ensureHubConnected(): Promise<void> {
     // First, ensure hub is created
     this.ensureInitialized();
+
 
     // Then ensure it's connected
     await this.signalrService.ensureConnected('video');
@@ -202,7 +214,10 @@ export class WebRTCService {
 
       // Create and send answer
       console.log('Creating answer...');
-      const answer = await this.peerConnection!.createAnswer();
+      const answer = await this.peerConnection!.createAnswer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
 
       // Optimize SDP for better audio quality
       answer.sdp = this.optimizeAudioQuality(answer.sdp!);
