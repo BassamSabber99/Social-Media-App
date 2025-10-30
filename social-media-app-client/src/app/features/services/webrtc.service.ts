@@ -61,7 +61,7 @@ export class WebRTCService {
   };
 
   constructor() {
-    this.initSignalR();
+
   }
   // Add this new public method
   public ensureInitialized(): void {
