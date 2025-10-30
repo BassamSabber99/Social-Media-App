@@ -536,7 +536,7 @@ export class WebRTCService {
     this.callStateSubject.next({ state, remoteUserId, remoteUserName });
   }
 
-  private initSignalR(): void {
+  initSignalR(): void {
     // Initialize SignalR connection
     this.signalrService.createHubConnection('video', {
       reconnectPolicy: {
@@ -550,6 +550,7 @@ export class WebRTCService {
         }
       }
     });
+
 
     // Handle incoming offer
     this.signalrService.on('video', 'ReceiveOffer', async (callerId: string, callerName: string, sdp: string) => {

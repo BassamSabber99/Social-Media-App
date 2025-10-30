@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { AuthStateService } from '../../../services/auth-state.service';
+import { WebRTCService } from '../../services/webrtc.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private authState: AuthStateService,
-    private router: Router
+    private router: Router,
+    private webrtcService: WebRTCService
   ) {
     this.loading$ = this.authState.loading$;
     this.error$ = this.authState.error$;
@@ -50,6 +52,7 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.authState.setLoading(false);
+        this.webrtcService.initSignalR();
         this.router.navigate(['/feed']);
       },
       error: (err) => {
