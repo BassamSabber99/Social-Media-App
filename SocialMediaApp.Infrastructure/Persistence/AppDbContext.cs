@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SocialMediaApp.Domain.Entities;
+using SocialMediaApp.Domain.Enums;
 
 namespace SocialMediaApp.Infrastructure.Persistence;
 
@@ -96,6 +97,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.HasKey(m => m.Id);
             entity.Property(m => m.Content).HasMaxLength(2048);
+            entity.Property(m => m.MessageType).HasDefaultValue(MessageType.Text);
+            entity.Property(m => m.FileName).HasMaxLength(256);
+            entity.Property(m => m.MimeType).HasMaxLength(128);
             entity.HasOne(m => m.Chat)
                   .WithMany(c => c.Messages)
                   .HasForeignKey(m => m.ChatId)

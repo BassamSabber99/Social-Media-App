@@ -6,6 +6,7 @@ public interface IChatService
 {
     Task<IReadOnlyList<ChatDto>> GetUserChatsAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<MessageDto> SendMessageAsync(Guid senderId, Guid receiverId, string content, CancellationToken cancellationToken = default);
+    Task<MessageDto> SendFileMessageAsync(Guid senderId, Guid receiverId, Stream fileStream, string fileName, string mimeType, long fileSize, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<MessageDto>> GetChatMessagesAsync(Guid chatId, Guid userId, int skip, int take, CancellationToken cancellationToken = default);
     Task<int> CountChatMessagesAsync(Guid chatId, CancellationToken cancellationToken = default);
     Task MarkMessagesAsReadAsync(Guid chatId, Guid userId, CancellationToken cancellationToken = default);

@@ -4,6 +4,11 @@ import { environment } from '../../../environment';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 import { SignalRService } from '../../services/signalr.service';
 
+export enum MessageType {
+  Text = 0,
+  File = 1
+}
+
 export interface MessageDto {
   id: string;
   chatId: string;
@@ -11,6 +16,10 @@ export interface MessageDto {
   senderUserName: string;
   senderDisplayName: string;
   content: string;
+  messageType: MessageType;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
   isRead: boolean;
   createdAtUtc: Date;
 }
@@ -62,6 +71,14 @@ export class ChatService {
     return this.http.post<MessageDto>(url, request);
   }
 
+  uploadFile(file: File, receiverId: string): Observable<MessageDto> {
+    const url = `${this.baseUrl}/chats/upload-file`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('receiverId', receiverId);
+    return this.http.post<MessageDto>(url, formData);
+  }
+
   markAsRead(chatId: string): Observable<void> {
     const url = `${this.baseUrl}/chats/${chatId}/read`;
     return this.http.post<void>(url, {});
@@ -103,6 +120,11 @@ export class ChatService {
       console.warn('SignalR failed, falling back to HTTP API', error);
       return await firstValueFrom(this.sendMessage({ receiverId, content }))
     }
+  }
+
+  async sendFileWithFallback(file: File, receiverId: string): Promise<MessageDto> {
+    // Files are always sent via HTTP (more reliable for large data)
+    return await firstValueFrom(this.uploadFile(file, receiverId));
   }
 
   markAsReadViaHub(chatId: string): void {

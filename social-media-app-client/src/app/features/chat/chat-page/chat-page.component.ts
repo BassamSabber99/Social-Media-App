@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatDto, MessageDto } from '../../services/chat.service';
+import { ChatService, ChatDto, MessageDto, MessageType } from '../../services/chat.service';
 import { AuthService } from '../../../services/auth.service';
 import { WebRTCService } from '../../services/webrtc.service';
+import { VoiceRecorderService } from '../../services/voice-recorder.service';
 import { Subscription } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -15,7 +16,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { NavbarComponent } from '../../../shared/navbar/navbar.component';
-import { LucideAngularModule, Send, MessageCircle, ArrowLeft, Video } from 'lucide-angular';
+import { LucideAngularModule, Send, MessageCircle, ArrowLeft, Video, Paperclip, Mic, X, Download, FileIcon, Music } from 'lucide-angular';
 
 @Component({
   selector: 'app-chat-page',
@@ -43,6 +44,15 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   readonly MessageCircleIcon = MessageCircle;
   readonly ArrowLeftIcon = ArrowLeft;
   readonly VideoIcon = Video;
+  readonly PaperclipIcon = Paperclip;
+  readonly MicIcon = Mic;
+  readonly XIcon = X;
+  readonly DownloadIcon = Download;
+  readonly FileIcon = FileIcon;
+  readonly MusicIcon = Music;
+  readonly MessageType = MessageType;
+
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   chats = signal<ChatDto[]>([]);
   selectedChat = signal<ChatDto | null>(null);
@@ -52,6 +62,9 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   sending = signal(false);
   isConnected = signal(true);
   showMobileChatList = signal(true);
+  isRecording = signal(false);
+  recordingDuration = signal(0);
+  uploadingFile = signal(false);
   currentUserId: string | null = null;
 
   private subscriptions: Subscription[] = [];
@@ -67,6 +80,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     private readonly chatService: ChatService,
     private readonly authService: AuthService,
     private readonly webrtcService: WebRTCService,
+    private readonly voiceRecorderService: VoiceRecorderService,
     private readonly messageService: MessageService
   ) {
     this.currentUserId = this.authService.getUserId();
@@ -76,10 +90,14 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.loadChats();
     this.setupRealtimeListeners();
     this.setupConnectionStatusListener();
+    this.setupVoiceRecorderListener();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    if (this.isRecording()) {
+      this.voiceRecorderService.cancelRecording();
+    }
   }
 
   private setupRealtimeListeners(): void {
@@ -311,6 +329,158 @@ export class ChatPageComponent implements OnInit, OnDestroy {
           life: 5000
         });
       });
+  }
+
+  selectFile(): void {
+    this.fileInput.nativeElement.click();
+  }
+
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) return;
+
+    const chat = this.selectedChat();
+    if (!chat) return;
+
+    // Max file size check (10 MB for files, 5 MB for voice)
+    const maxSize = file.type.startsWith('audio/') ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'File Too Large',
+        detail: `Maximum file size is ${maxSize / 1024 / 1024} MB`,
+        life: 5000
+      });
+      input.value = '';
+      return;
+    }
+
+    this.uploadingFile.set(true);
+
+    try {
+      const message = await this.chatService.sendFileWithFallback(file, chat.otherUserId);
+      this.messages.update(msgs => [...msgs, message]);
+      setTimeout(() => this.scrollToBottom(), 100);
+      
+      this.messageService.add({
+        severity: 'success',
+        summary: 'File Sent',
+        detail: 'File uploaded successfully',
+        life: 3000
+      });
+    } catch (error: any) {
+      console.error('Failed to upload file:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: error.error?.error || 'Failed to upload file',
+        life: 5000
+      });
+    } finally {
+      this.uploadingFile.set(false);
+      input.value = '';
+    }
+  }
+
+  async startVoiceRecording(): Promise<void> {
+    try {
+      await this.voiceRecorderService.startRecording();
+      this.isRecording.set(true);
+    } catch (error: any) {
+      console.error('Failed to start recording:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Recording Failed',
+        detail: error.message || 'Failed to start recording',
+        life: 5000
+      });
+    }
+  }
+
+  stopVoiceRecording(): void {
+    this.voiceRecorderService.stopRecording();
+  }
+
+  cancelVoiceRecording(): void {
+    this.voiceRecorderService.cancelRecording();
+    this.isRecording.set(false);
+    this.recordingDuration.set(0);
+  }
+
+  private setupVoiceRecorderListener(): void {
+    this.subscriptions.push(
+      this.voiceRecorderService.recordingState$.subscribe(async state => {
+        this.isRecording.set(state.isRecording);
+        this.recordingDuration.set(state.duration);
+
+        // When recording stops and we have audio blob, send it
+        if (!state.isRecording && state.audioBlob) {
+          const chat = this.selectedChat();
+          if (!chat) return;
+
+          this.uploadingFile.set(true);
+
+          try {
+            const mimeType = state.audioBlob.type;
+            const extension = this.voiceRecorderService.getFileExtension(mimeType);
+            const fileName = `voice-note-${Date.now()}.${extension}`;
+            const file = new File([state.audioBlob], fileName, { type: mimeType });
+
+            const message = await this.chatService.sendFileWithFallback(file, chat.otherUserId);
+            this.messages.update(msgs => [...msgs, message]);
+            setTimeout(() => this.scrollToBottom(), 100);
+
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Voice Note Sent',
+              detail: 'Voice note sent successfully',
+              life: 3000
+            });
+          } catch (error: any) {
+            console.error('Failed to send voice note:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Send Failed',
+              detail: error.error?.error || 'Failed to send voice note',
+              life: 5000
+            });
+          } finally {
+            this.uploadingFile.set(false);
+          }
+        }
+      })
+    );
+  }
+
+  formatDuration(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  isVoiceNote(message: MessageDto): boolean {
+    return message.messageType === MessageType.File && 
+           !!message.mimeType?.startsWith('audio/');
+  }
+
+  isFileMessage(message: MessageDto): boolean {
+    return message.messageType === MessageType.File && 
+           !message.mimeType?.startsWith('audio/');
+  }
+
+  getFileIcon(mimeType?: string): any {
+    if (!mimeType) return this.FileIcon;
+    if (mimeType.startsWith('audio/')) return this.MusicIcon;
+    return this.FileIcon;
   }
 }
 

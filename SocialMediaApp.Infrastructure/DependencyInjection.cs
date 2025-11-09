@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Minio;
+using SocialMediaApp.Application.Configuration;
 using SocialMediaApp.Application.Interfaces;
 using SocialMediaApp.Application.Interfaces.Repositories;
 using SocialMediaApp.Application.Services;
 using SocialMediaApp.Infrastructure.Persistence;
 using SocialMediaApp.Infrastructure.Repositories;
+using SocialMediaApp.Infrastructure.Services;
 using SocialMediaApp.Infrastructure.UnitOfWork;
 
 namespace SocialMediaApp.Infrastructure;
@@ -37,6 +40,26 @@ public static class DependencyInjection
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IChatService, ChatService>();
+
+        // Configure MinIO client
+        var fileStorageOptions = configuration.GetSection(FileStorageOptions.SectionName).Get<FileStorageOptions>() 
+            ?? new FileStorageOptions();
+
+        services.AddSingleton<IMinioClient>(sp =>
+        {
+            var client = new MinioClient()
+                .WithEndpoint(fileStorageOptions.MinIO.Endpoint)
+                .WithCredentials(fileStorageOptions.MinIO.AccessKey, fileStorageOptions.MinIO.SecretKey);
+
+            if (fileStorageOptions.MinIO.UseSSL)
+            {
+                client = client.WithSSL();
+            }
+
+            return client.Build();
+        });
+
+        services.AddScoped<IFileStorageService, MinIOFileStorageService>();
 
         return services;
     }

@@ -117,7 +117,26 @@
                   [class.own-message]="message.senderId === currentUserId"
                   [class.other-message]="message.senderId !== currentUserId">
                   <div class="message-content">
-                    <p>{{ message.content }}</p>
+                    @if (message.messageType === MessageType.Text) {
+                      <p>{{ message.content }}</p>
+                    } @else if (isVoiceNote(message)) {
+                      <div class="voice-note">
+                        <lucide-angular [img]="MusicIcon" [size]="20"></lucide-angular>
+                        <audio controls [src]="message.content"></audio>
+                        <span class="file-size">{{ formatFileSize(message.fileSize) }}</span>
+                      </div>
+                    } @else if (isFileMessage(message)) {
+                      <div class="file-message">
+                        <lucide-angular [img]="getFileIcon(message.mimeType)" [size]="32"></lucide-angular>
+                        <div class="file-info">
+                          <span class="file-name">{{ message.fileName }}</span>
+                          <span class="file-size">{{ formatFileSize(message.fileSize) }}</span>
+                        </div>
+                        <a [href]="message.content" [download]="message.fileName" target="_blank" class="download-btn">
+                          <lucide-angular [img]="DownloadIcon" [size]="20"></lucide-angular>
+                        </a>
+                      </div>
+                    }
                     <div class="message-meta">
                       <span class="message-time">{{ formatTime(message.createdAtUtc) }}</span>
                       @if (message.senderId === currentUserId && message.isRead) {
@@ -133,21 +152,64 @@
 
         <div class="message-input-container">
           <input 
-            type="text" 
-            pInputText 
-            [ngModel]="messageContent()"
-            (ngModelChange)="messageContent.set($event)"
-            (keydown.enter)="sendMessage()"
-            placeholder="Type a message..."
-            class="message-input"
+            #fileInput
+            type="file" 
+            style="display: none"
+            (change)="onFileSelected($event)"
+            accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
           />
-          <p-button 
-            (onClick)="sendMessage()"
-            [disabled]="!messageContent().trim() || sending()"
-            [loading]="sending()"
-            severity="primary">
-            <lucide-angular [img]="SendIcon" [size]="20"></lucide-angular>
-          </p-button>
+
+          @if (isRecording()) {
+            <div class="recording-indicator">
+              <div class="recording-controls">
+                <span class="recording-dot"></span>
+                <span class="recording-time">{{ formatDuration(recordingDuration()) }}</span>
+                <button class="cancel-btn" (click)="cancelVoiceRecording()" pTooltip="Cancel recording">
+                  <lucide-angular [img]="XIcon" [size]="20"></lucide-angular>
+                </button>
+                <button class="stop-btn" (click)="stopVoiceRecording()" pTooltip="Stop recording">
+                  <lucide-angular [img]="SendIcon" [size]="20"></lucide-angular>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button 
+              class="attach-btn" 
+              (click)="selectFile()"
+              [disabled]="uploadingFile()"
+              pTooltip="Attach file"
+              tooltipPosition="top">
+              <lucide-angular [img]="PaperclipIcon" [size]="20"></lucide-angular>
+            </button>
+
+            <button 
+              class="voice-btn" 
+              (click)="startVoiceRecording()"
+              [disabled]="uploadingFile()"
+              pTooltip="Record voice note"
+              tooltipPosition="top">
+              <lucide-angular [img]="MicIcon" [size]="20"></lucide-angular>
+            </button>
+
+            <input 
+              type="text" 
+              pInputText 
+              [ngModel]="messageContent()"
+              (ngModelChange)="messageContent.set($event)"
+              (keydown.enter)="sendMessage()"
+              placeholder="Type a message..."
+              class="message-input"
+              [disabled]="uploadingFile()"
+            />
+
+            <p-button 
+              (onClick)="sendMessage()"
+              [disabled]="!messageContent().trim() || sending() || uploadingFile()"
+              [loading]="sending() || uploadingFile()"
+              severity="primary">
+              <lucide-angular [img]="SendIcon" [size]="20"></lucide-angular>
+            </p-button>
+          }
         </div>
       }
     </div>

@@ -58,6 +58,33 @@ public class ChatHub : Hub
         await Clients.Group($"user-{receiverId}").SendAsync("ReceiveMessage", message);
     }
 
+    public async Task SendFileMessage(Guid receiverId, string fileUrl, string fileName, long fileSize, string mimeType)
+    {
+        var senderId = HubUserHelper.GetUserId(Context);
+        if (!senderId.HasValue)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        // Prevent messaging yourself
+        if (senderId.Value == receiverId)
+        {
+            throw new HubException("Cannot send messages to yourself");
+        }
+
+        // Note: The file must already be uploaded to storage
+        // This method is for real-time notification after HTTP upload
+        // We create a memory stream as placeholder (file is already in MinIO)
+        using var memoryStream = new MemoryStream();
+        var message = await _chatService.SendFileMessageAsync(senderId.Value, receiverId, memoryStream, fileName, mimeType, fileSize);
+
+        // Send to sender
+        await Clients.Group($"user-{senderId.Value}").SendAsync("ReceiveMessage", message);
+        
+        // Send to receiver
+        await Clients.Group($"user-{receiverId}").SendAsync("ReceiveMessage", message);
+    }
+
     public async Task MarkAsRead(Guid chatId)
     {
         var userId = HubUserHelper.GetUserId(Context);

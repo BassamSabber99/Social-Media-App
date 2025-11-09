@@ -14,6 +14,7 @@ public static class ChatEndpoints
         group.MapGet("/", GetUserChats);
         group.MapGet("/{chatId:guid}/messages", GetChatMessages);
         group.MapPost("/", SendMessage);
+        group.MapPost("/upload-file", UploadFile).DisableAntiforgery();
         group.MapPost("/{chatId:guid}/read", MarkAsRead);
         group.MapPost("/create/{userId:guid}", GetOrCreateChat);
 
@@ -76,6 +77,51 @@ public static class ChatEndpoints
 
         var message = await chatService.SendMessageAsync(userId.Value, request.ReceiverId, request.Content, cancellationToken);
         return Results.Ok(message);
+    }
+
+    private static async Task<IResult> UploadFile(
+        [FromForm] IFormFile file,
+        [FromForm] string receiverId,
+        [FromServices] IChatService chatService,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        if (!userId.HasValue)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (file == null || file.Length == 0)
+        {
+            return Results.BadRequest(new { error = "File is required" });
+        }
+
+        if (!Guid.TryParse(receiverId, out var receiverGuid))
+        {
+            return Results.BadRequest(new { error = "Invalid receiver ID" });
+        }
+
+        try
+        {
+            // Use the file stream directly (memory-efficient)
+            await using var stream = file.OpenReadStream();
+            
+            var message = await chatService.SendFileMessageAsync(
+                userId.Value, 
+                receiverGuid, 
+                stream, 
+                file.FileName, 
+                file.ContentType, 
+                file.Length, 
+                cancellationToken);
+
+            return Results.Ok(message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
     }
 
     private static async Task<IResult> MarkAsRead(
